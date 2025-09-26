@@ -47,6 +47,14 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Circus Theme Colors
+        "circus-red": "hsl(var(--circus-red))",
+        "circus-gold": "hsl(var(--circus-gold))",
+        "circus-purple": "hsl(var(--circus-purple))",
+        "circus-green": "hsl(var(--circus-green))",
+        "spotlight": "hsl(var(--spotlight))",
+        "curtain": "hsl(var(--curtain))",
+        "stage": "hsl(var(--stage))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -57,6 +65,16 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+      },
+      backgroundImage: {
+        'gradient-spotlight': 'var(--gradient-spotlight)',
+        'gradient-stage': 'var(--gradient-stage)',
+        'gradient-curtain': 'var(--gradient-curtain)',
+      },
+      boxShadow: {
+        'spotlight': 'var(--shadow-spotlight)',
+        'bloom': 'var(--shadow-bloom)',
+        'glow': 'var(--glow)',
       },
       borderRadius: {
         lg: "var(--radius)",
