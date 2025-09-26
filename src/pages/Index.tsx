@@ -2,6 +2,7 @@ import { useState } from 'react';
 import GameCanvas from '@/components/game/GameCanvas';
 import GameUI from '@/components/game/GameUI';
 import GameInstructions from '@/components/game/GameInstructions';
+import GameControls from '@/components/game/GameControls';
 import { Button } from '@/components/ui/button';
 import circusHero from '@/assets/circus-hero.jpg';
 
@@ -9,6 +10,13 @@ const Index = () => {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(60);
   const [showInstructions, setShowInstructions] = useState(true);
+  const [gameKey, setGameKey] = useState(0); // Force remount of game
+
+  const handleRestart = () => {
+    setScore(0);
+    setTimeLeft(60);
+    setGameKey(prev => prev + 1); // This will remount the GameCanvas component
+  };
 
   return (
     <div className="min-h-screen bg-gradient-stage text-foreground">
@@ -56,9 +64,16 @@ const Index = () => {
           coins={10}
         />
 
+        {/* Game Controls */}
+        <GameControls 
+          onRestart={handleRestart}
+          gameEnded={timeLeft <= 0}
+        />
+
         {/* Game Canvas */}
         <div className="flex justify-center">
           <GameCanvas 
+            key={gameKey} // This forces remount when gameKey changes
             onScoreUpdate={setScore}
             onTimeUpdate={setTimeLeft}
           />

@@ -78,13 +78,18 @@ class CircusScene extends Phaser.Scene {
     // Input
     this.cursors = this.input.keyboard!.createCursorKeys();
 
-    // Game timer
+    // Game timer - store reference to stop it later
     this.time.addEvent({
       delay: 1000,
       callback: this.updateTimer,
       callbackScope: this,
       loop: true
     });
+
+    // Initial time update
+    if (this.game?.events) {
+      this.game.events.emit('timeUpdate', this.gameTime);
+    }
 
     // Instructions
     this.add.text(120, 50, 'The Sacrifice Bloom', { 
@@ -141,8 +146,8 @@ class CircusScene extends Phaser.Scene {
     this.gameTime--;
     
     // Emit time update to parent component
-    if (this.scene.scene.game.events) {
-      this.scene.scene.game.events.emit('timeUpdate', this.gameTime);
+    if (this.game?.events) {
+      this.game.events.emit('timeUpdate', this.gameTime);
     }
 
     if (this.gameTime <= 0) {
@@ -151,6 +156,9 @@ class CircusScene extends Phaser.Scene {
   }
 
   private endGame() {
+    // Stop the timer
+    this.time.removeAllEvents();
+    
     // Count bloomed flowers
     const bloomedFlowers = this.flowers.filter(f => f.bloomed);
     this.score = bloomedFlowers.reduce((total, flower) => {
@@ -161,23 +169,47 @@ class CircusScene extends Phaser.Scene {
 
     // Show final score
     const finalText = this.add.text(400, 300, 
-      `Curtain Rises!\nAudience Applause: ${this.score} points\n\nPress R to restart`, {
-      fontSize: '24px',
+      `🎭 Curtain Rises! 🎭\nAudience Applause: ${this.score} points\n\nPress R to restart or SPACE for new game`, {
+      fontSize: '20px',
       color: '#FFD700',
       align: 'center',
       fontFamily: 'serif'
     });
     finalText.setOrigin(0.5);
 
+    // Add background for better readability
+    const bg = this.add.graphics();
+    bg.fillStyle(0x000000, 0.8);
+    bg.fillRect(200, 220, 400, 160);
+    finalText.setDepth(1);
+
     // Emit score to parent
-    if (this.scene.scene.game.events) {
-      this.scene.scene.game.events.emit('scoreUpdate', this.score);
+    if (this.game?.events) {
+      this.game.events.emit('scoreUpdate', this.score);
     }
 
-    // Restart on R key
-    this.input.keyboard!.on('keydown-R', () => {
-      this.scene.restart();
-    });
+    // Restart on R key or SPACE
+    const restartHandler = () => {
+      this.resetGame();
+    };
+
+    this.input.keyboard!.once('keydown-R', restartHandler);
+    this.input.keyboard!.once('keydown-SPACE', restartHandler);
+  }
+
+  private resetGame() {
+    // Reset all game state
+    this.gameTime = 60;
+    this.score = 0;
+    this.spotlightEnergy = 100;
+    this.coins = 10;
+    
+    // Clear flowers array
+    this.flowers.forEach(flower => flower.sprite.destroy());
+    this.flowers = [];
+    
+    // Restart the scene
+    this.scene.restart();
   }
 
   update() {
@@ -254,13 +286,15 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ onScoreUpdate, onTimeUpdate }) 
       phaserGame.current = new Phaser.Game(config);
 
       // Listen for game events
-      phaserGame.current.events.on('scoreUpdate', (score: number) => {
-        onScoreUpdate?.(score);
-      });
+      if (phaserGame.current?.events) {
+        phaserGame.current.events.on('scoreUpdate', (score: number) => {
+          onScoreUpdate?.(score);
+        });
 
-      phaserGame.current.events.on('timeUpdate', (time: number) => {
-        onTimeUpdate?.(time);
-      });
+        phaserGame.current.events.on('timeUpdate', (time: number) => {
+          onTimeUpdate?.(time);
+        });
+      }
     }
 
     return () => {
